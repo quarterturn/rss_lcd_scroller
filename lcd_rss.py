@@ -15,16 +15,9 @@ from Queue import Queue
 feed_name = 'breitbart'
 url = 'http://feeds.feedburner.com/breitbart'
 
-#feed_name = sys.argv[1]
-#url = sys.argv[2]
-
-db = '/var/tmp/feeds.db'
-limit = 12 * 3600 * 1000
-
 # globals for get_feed() so it can run as a thread
 # and have a place to return data
 posts_to_print = []
-posts_to_skip = []
 
 
 # function to get the current time
@@ -32,56 +25,20 @@ posts_to_skip = []
 current_time_millis = lambda: int(round(time.time() * 1000))
 current_timestamp = current_time_millis()
 
-def post_is_in_db(title):
-    with open(db, 'r') as database:
-        for line in database:
-            if title in line:
-                return True
-    return False
-
-# return true if the title is in the database with a timestamp > limit
-def post_is_in_db_with_old_timestamp(title):
-    with open(db, 'r') as database:
-        for line in database:
-            if title in line:
-                ts_as_string = line.split('|', 1)[1]
-                ts = long(ts_as_string)
-                if current_timestamp - ts > limit:
-                    return True
-    return False
-
 def get_feed():
     while True:
         # get the feed data from the url
         #
         feed = feedparser.parse(url)
-            
-        
-        #
-        # figure out which posts to print
-        #
-        global posts_to_print 
-        global posts_to_skip
-        
+       
+        global posts_to_print
+        posts_to_print = []
+ 
+        # get the feed
         for post in feed.entries:
-            # if post is already in the database, skip it
-            # TODO check the time
             title = post.title
-            if post_is_in_db_with_old_timestamp(title):
-                posts_to_skip.append(title)
-            else:
-                posts_to_print.append(title)
+            posts_to_print.append(title)
             
-        #
-        # add all the posts we're going to print to the database with the current timestamp
-        # (but only if they're not already in there)
-        #
-        f = open(db, 'a')
-        for title in posts_to_print:
-            if not post_is_in_db(title):
-                title.encode('utf-8','replace')
-                f.write(unidecode.unidecode(title) + "|" + str(current_timestamp) + "\n")
-        f.close
         # sleep for one hour
         time.sleep(3600)
 
