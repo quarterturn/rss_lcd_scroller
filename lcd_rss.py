@@ -19,6 +19,8 @@ url = 'http://feeds.feedburner.com/breitbart'
 # and have a place to return data
 posts_to_print = []
 
+# signal if first post gathering has happened
+wait_for_posts = 1
 
 # function to get the current time
 #
@@ -32,6 +34,7 @@ def get_feed():
         feed = feedparser.parse(url)
        
         global posts_to_print
+        global wait_for_posts
         posts_to_print = []
  
         # get the feed
@@ -39,6 +42,8 @@ def get_feed():
             title = post.title
             posts_to_print.append(title)
             
+        wait_for_posts = 0
+
         # sleep for one hour
         time.sleep(3600)
 
@@ -236,10 +241,9 @@ Thread(target = wrapper, args=(get_feed, q1)).start()
 lcd.clear()
 lcd.message("Getting posts\nPlease be patient")
 
-# wait for a bit so the feed thread
-# has time to fetch something
-# wait 5 minutes
-time.sleep(300)
+# wait for the feed to be downloaded
+while (wait_for_posts == 1):
+    time.sleep(0.1)
 
 # main loop
 while (True):
