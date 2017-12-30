@@ -29,13 +29,24 @@ current_timestamp = current_time_millis()
 
 def get_feed():
     while True:
-        # get the feed data from the url
-        #
-        feed = feedparser.parse(url)
-       
         global posts_to_print
         global wait_for_posts
-        posts_to_print = []
+
+        # signal we are waiting for new posts
+        # and will clear the posts_to_print list
+        wait_for_posts = 1
+        lcd.set_cursor(0, 1)
+        lcd.message("Refreshing posts    ")
+
+        # get the feed data from the url
+        #
+        try:
+            feed = feedparser.parse(url)
+        except:
+            return
+       
+        # clear the list
+        del posts_to_print[:]
  
         # get the feed
         for post in feed.entries:
@@ -278,8 +289,10 @@ while (True):
     # start over if posts have decreased
     if postCount > numPosts:
         postCount = 0;       
- 
-    if (new_frame_now == 1):
+    
+    # update the scrolling animation
+    # so long as we are not getting new posts 
+    if ((new_frame_now == 1) and (wait_for_posts == 0)):
         new_frame_now = 0
         if (s.step(posts_to_print[postCount])) == 0:
             if (postCount < (numPosts - 1)):
