@@ -35,8 +35,6 @@ def get_feed():
         # signal we are waiting for new posts
         # and will clear the posts_to_print list
         wait_for_posts = 1
-        lcd.set_cursor(0, 1)
-        lcd.message("Refreshing posts    ")
 
         # get the feed data from the url
         #
@@ -299,6 +297,9 @@ while (True):
                 postCount += 1
             else:
                 postCount = 0
+    else:
+        lcd.set_cursor(0, 1)
+        lcd.message("                    ")
    
     # see if it is time to update the frame
     if (time.time() - lastTime) > (1.0 / MAX_FPS):
